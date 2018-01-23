@@ -71,7 +71,7 @@ def print_binary(bindata : ByteType) -> None:
 
     # print header
     print('          ' + ' '.join(map(lambda x:'{:02X}'.format(x), range(16))) + '  0123456789ABCDEF')
-    print('-' * 72)
+    print('-' * 75)
     position = 0
     while True :
         position_str = '{:08X}'.format(position)

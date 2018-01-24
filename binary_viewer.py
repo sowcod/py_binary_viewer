@@ -8,8 +8,10 @@ import codecs
 
 replacement_escape = str.maketrans('\'\"\a\b\f\n\r\t\v', '         ')
 
+error_char = chr(65533)
+
 def replace_error_bytes(ex):
-    return (chr(65533) * (ex.end - ex.start), ex.end)
+    return (error_char * (ex.end - ex.start), ex.end)
 
 codecs.register_error('binary_viewer.replace_error_bytes', replace_error_bytes)
 
@@ -42,8 +44,11 @@ def binary_to_text(bindata : ByteType, encoding : str = 'utf-8') -> str :
     for char in encoded_str:
         reencoded = char.encode(encoding)
 
-        # check by east_asian_width
-        if unicodedata.east_asian_width(char) in ('F','W','A') :
+        if unicodedata.category(char)[0] == 'C' :
+            # if control char
+            bytesize = 1
+            result_str += error_char
+        elif unicodedata.east_asian_width(char) in ('F','W','A') :
             # if wide character
             # get actual byte size
             if reencoded == data[bytepos:bytepos+len(reencoded)] :
@@ -88,6 +93,8 @@ def print_binary(bindata : ByteType) -> None:
 
 if __name__ == '__main__' :
     test_bin = '0123456789ABCDEFあいえお\t'.encode('utf-8') + b'\x80\x81\\'
-    test_bin += 'あいうえおかきくけこさしすせそ'.encode('utf-8')
+    test_bin += 'あいうえおかきくけこさしすせそ   '.encode('utf-8')
+    test_bin += '\x10\x00\xd2\x02\x09l'.encode('utf-8')
     print_binary(test_bin)
+
 
